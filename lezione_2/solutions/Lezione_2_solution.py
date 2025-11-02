@@ -1,4 +1,4 @@
-Lezione 2 – Movimento
+#Lezione 2 – Movimento
 # Obiettivo: capire come il gioco passa da una sezione "normale" alla sezione del Boss finale
  
 import pygame

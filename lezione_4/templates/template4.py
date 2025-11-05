@@ -56,7 +56,7 @@ boss_attivo = False
 tempo_ultimo_proiettile = 0
 tempo_ricarica = 1500  # ms
 
-# --- TODO: aggiungere gestione dei nemici sparanti ---
+# --- TODO aggiungere gestione dei nemici sparanti ---
 
 # --- Font ---
 font = pygame.font.SysFont(None, 36)
@@ -71,7 +71,7 @@ def reset_giocatore():
 
 reset_giocatore()
 
-# --- TODO: creare funzione spawn_nemico() ---
+# --- TODO creare funzione spawn_nemico() ---
 
 # --- Ciclo principale ---
 running = True
@@ -140,11 +140,11 @@ while running:
                coins.remove(coin)
                punteggio += 10
 
-       # --- TODO: spawn nemici sparanti con intervallo controllato ---
+       # --- TODO spawn nemici sparanti con intervallo controllato ---
 
-       # --- TODO: movimento nemici sparanti e generazione proiettili ---
+       # --- TODO movimento nemici sparanti e generazione proiettili ---
 
-       # --- TODO: movimento e collisione proiettili nemici ---
+       # --- TODO movimento e collisione proiettili nemici ---
 
        # Attiva sezione Boss
        if punteggio >= PUNTEGGIO_PER_BOSS:
@@ -194,7 +194,7 @@ while running:
    for coin in coins:
        pygame.draw.circle(screen, GIALLO, (int(coin["x"]), int(coin["y"])), 10)
 
-   # --- TODO: disegnare nemici sparanti e i loro proiettili ---
+   # --- TODO disegnare nemici sparanti e i loro proiettili ---
 
    # Boss e proiettili
    if boss_attivo:

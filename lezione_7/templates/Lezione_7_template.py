@@ -1,0 +1,266 @@
+import pygame
+import sys
+import random
+pygame.init()
+# --- Impostazioni schermo ---
+SCREEN_WIDTH = 800
+SCREEN_HEIGHT = 600
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+pygame.display.set_caption("Ladro in fuga - Lezione 4 con vittoria e sconfitta")
+# --- Clock e FPS ---
+clock = pygame.time.Clock()
+FPS = 60
+# --- Costanti ---
+GRAVITA = 0.8
+SALTO_FORZA = -15
+TOLLERANZA = 10
+PUNTEGGIO_PER_BOSS = 50
+TEMPO_VITTORIA = 30000 # 30 secondi (in millisecondi)
+# TODO: Aggiungi TEMPO_INVINCIBILE = 1000
+# --- Colori ---
+CELESTE = (135, 206, 235)
+MARRONE = (139, 69, 19)
+GIALLO = (255, 215, 0)
+VERDE = (0, 200, 0)
+ROSSO = (255, 0, 0)
+VIOLA = (128, 0, 128)
+NERO = (0, 0, 0)
+ARANCIONE = (255, 140, 0)
+BIANCO = (255, 255, 255)
+# TODO: Aggiungi caricamento immagini (ladro3.png, ladro2.png, coin1-5.png, police1.png, heart.png)
+# --- Stato del gioco ---
+stato = "menu" # "menu" o "gioco"
+tempo_menu_inizio = 0
+# --- Giocatore ---
+# TODO: Definisci ALTEZZA_GIOCATORE = 64, LARGHEZZA_GIOCATORE = 48
+# giocatore = pygame.Rect(100, SCREEN_HEIGHT - 50 - ALTEZZA_GIOCATORE, LARGHEZZA_GIOCATORE, ALTEZZA_GIOCATORE)
+giocatore = pygame.Rect(100, SCREEN_HEIGHT - 150, 40, 50)
+vel_y = 0
+puo_saltare = False
+vite = 3
+punteggio = 0
+# TODO: Aggiungi tempo_danno = 0
+# --- Ostacoli e monete ---
+# TODO: Definisci LARGHEZZA_MONETA = 32, ALTEZZA_MONETA = 32
+obstacles = [{"x": 800, "y": SCREEN_HEIGHT - 100}, {"x": 1200, "y": SCREEN_HEIGHT - 100}]
+coins = [{"x": 900, "y": SCREEN_HEIGHT - 200}, {"x": 1300, "y": SCREEN_HEIGHT - 180}]
+# TODO: Aggiungi "frame_index": 0 in ogni coin
+# --- Nemici sparanti ---
+# TODO: Definisci LARGHEZZA_NEMICO = 48, ALTEZZA_NEMICO = 48
+nemici_sparanti = []
+proiettili_nemico = []
+tempo_ultimo_spawn_nemico = 0
+intervallo_spawn_nemico = 3000 # massimo un nemico ogni 3 secondi
+# --- Boss (non ancora usato) ---
+boss = pygame.Rect(SCREEN_WIDTH + 200, SCREEN_HEIGHT - 150, 80, 80)
+proiettili = []
+boss_attivo = False
+tempo_ultimo_proiettile = 0
+tempo_ricarica = 1500
+# --- Font ---
+font = pygame.font.SysFont(None, 36)
+font_grande = pygame.font.SysFont(None, 80)
+# --- Funzione reset giocatore ---
+def reset_giocatore():
+    global vel_y, puo_saltare
+    # TODO: Usa ALTEZZA_GIOCATORE per y
+    giocatore.x = 100
+    giocatore.y = SCREEN_HEIGHT - 150
+    vel_y = 0
+    puo_saltare = False
+# --- Funzione reset gioco ---
+def reset_gioco():
+    global vite, punteggio, obstacles, coins, nemici_sparanti, proiettili_nemico, proiettili, boss_attivo, tempo_ultimo_spawn_nemico, tempo_ultimo_proiettile
+    vite = 3
+    punteggio = 0
+    obstacles = [{"x": 800, "y": SCREEN_HEIGHT - 100}, {"x": 1200, "y": SCREEN_HEIGHT - 100}]
+    coins = [{"x": 900, "y": SCREEN_HEIGHT - 200}, {"x": 1300, "y": SCREEN_HEIGHT - 180}]
+    nemici_sparanti = []
+    proiettili_nemico = []
+    proiettili = []
+    boss_attivo = False
+    tempo_ultimo_spawn_nemico = 0
+    tempo_ultimo_proiettile = 0
+    reset_giocatore()
+    # TODO: Aggiungi tempo_danno = 0
+# --- Funzione spawn nemico ---
+def spawn_nemico():
+    x = SCREEN_WIDTH + 50
+    y = SCREEN_HEIGHT - 100
+    # TODO: Usa LARGHEZZA_NEMICO, ALTEZZA_NEMICO per rect e y
+    nemico = {"rect": pygame.Rect(x, y, 40, 40), "spawn_time": pygame.time.get_ticks(), "proiettile_sparato": False}
+    nemici_sparanti.append(nemico)
+# --- Ciclo principale ---
+running = True
+vittoria = False
+sconfitta = False
+while running:
+    clock.tick(FPS)
+    ora = pygame.time.get_ticks()
+    # --- Eventi generali ---
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            sys.exit()
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if stato == "menu":
+                mouse_pos = pygame.mouse.get_pos()
+                bottone_gioca = pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 + 50, 200, 60)
+                if bottone_gioca.collidepoint(mouse_pos):
+                    stato = "gioco"
+                    reset_gioco()
+                    tempo_inizio = ora
+                    vittoria = False
+                    sconfitta = False
+    # --- Input tastiera generale ---
+    keys = pygame.key.get_pressed()
+    if stato == "menu" and keys[pygame.K_SPACE]:
+        stato = "gioco"
+        reset_gioco()
+        tempo_inizio = ora
+        vittoria = False
+        sconfitta = False
+    # --- MENU ---
+    if stato == "menu":
+        screen.fill(CELESTE)
+        pygame.draw.rect(screen, MARRONE, (0, SCREEN_HEIGHT - 50, SCREEN_WIDTH, 50))
+        testo_titolo = font_grande.render("Ladro in fuga", True, NERO)
+        x_titolo = (SCREEN_WIDTH - testo_titolo.get_width()) // 2
+        screen.blit(testo_titolo, (x_titolo, 100))
+        bottone_gioca = pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 + 50, 200, 60)
+        pygame.draw.rect(screen, VERDE, bottone_gioca, border_radius=10)
+        testo_gioca = font.render("GIOCA", True, NERO)
+        x_gioca = bottone_gioca.centerx - testo_gioca.get_width() // 2
+        y_gioca = bottone_gioca.centery - testo_gioca.get_height() // 2
+        screen.blit(testo_gioca, (x_gioca, y_gioca))
+    # --- GIOCO ---
+    elif stato == "gioco":
+        tempo_passato = ora - tempo_inizio
+        # --- Controlla fine partita ---
+        if vite <= 0 and not sconfitta:
+            sconfitta = True
+            nemici_sparanti.clear()
+            proiettili_nemico.clear()
+            obstacles.clear()
+            coins.clear()
+            proiettili.clear()
+            boss_attivo = False
+            tempo_menu_inizio = ora
+        if tempo_passato >= TEMPO_VITTORIA and not vittoria and not sconfitta:
+            vittoria = True
+            nemici_sparanti.clear()
+            proiettili_nemico.clear()
+            obstacles.clear()
+            coins.clear()
+            proiettili.clear()
+            boss_attivo = False
+            tempo_menu_inizio = ora
+        # --- Gioco attivo ---
+        if not vittoria and not sconfitta:
+            # Input salto
+            if keys[pygame.K_SPACE] and puo_saltare:
+                vel_y = SALTO_FORZA
+                puo_saltare = False
+            # Gravità
+            vel_y += GRAVITA
+            giocatore.y += vel_y
+            # Collisione col suolo
+            if giocatore.bottom >= SCREEN_HEIGHT - 50:
+                giocatore.bottom = SCREEN_HEIGHT - 50
+                vel_y = 0
+                puo_saltare = True
+            # Scorrimento ostacoli e monete
+            for obs in obstacles:
+                obs["x"] -= 5
+            for coin in coins:
+                coin["x"] -= 5
+            # Rigenerazione ostacoli e monete
+            for obs in obstacles[:]:
+                if obs["x"] < -50:
+                    obstacles.remove(obs)
+                    obstacles.append({"x": SCREEN_WIDTH + random.randint(200, 400), "y": SCREEN_HEIGHT - 100})
+            for coin in coins[:]:
+                if coin["x"] < -20:
+                    coins.remove(coin)
+                    coins.append({"x": SCREEN_WIDTH + random.randint(300, 600), "y": SCREEN_HEIGHT - random.randint(150, 250)})
+            # Collisioni
+            for obs in obstacles:
+                # TODO: Aggiungi check invincibilità
+                obs_rect = pygame.Rect(obs["x"], obs["y"], 50, 50)
+                if giocatore.colliderect(obs_rect):
+                    if giocatore.bottom - vel_y <= obs_rect.top + TOLLERANZA:
+                        giocatore.bottom = obs_rect.top
+                        vel_y = 0
+                        puo_saltare = True
+                    else:
+                        vite -= 1
+                        # TODO: Aggiungi tempo_danno = ora
+                        reset_giocatore()
+            for coin in coins[:]:
+                # TODO: Usa LARGHEZZA_MONETA, ALTEZZA_MONETA per coin_rect
+                coin_rect = pygame.Rect(coin["x"], coin["y"], 20, 20)
+                if giocatore.colliderect(coin_rect):
+                    coins.remove(coin)
+                    punteggio += 10
+                    coins.append({"x": SCREEN_WIDTH + random.randint(300, 600), "y": SCREEN_HEIGHT - random.randint(150, 250)})
+            # Nemici
+            if len(nemici_sparanti) < 2 and ora - tempo_ultimo_spawn_nemico > intervallo_spawn_nemico:
+                spawn_nemico()
+                tempo_ultimo_spawn_nemico = ora
+            for nemico in nemici_sparanti[:]:
+                nemico["rect"].x -= 4
+                if not nemico["proiettile_sparato"]:
+                    p = pygame.Rect(nemico["rect"].left, nemico["rect"].centery - 5, 15, 10)
+                    proiettili_nemico.append({"rect": p, "spawn_time": ora})
+                    nemico["proiettile_sparato"] = True
+                if ora - nemico["spawn_time"] > 2500:
+                    nemici_sparanti.remove(nemico)
+            for p in proiettili_nemico[:]:
+                # TODO: Aggiungi check invincibilità
+                p["rect"].x -= 7
+                if ora - p["spawn_time"] > 3000 or p["rect"].right < 0:
+                    proiettili_nemico.remove(p)
+                    continue
+                if giocatore.colliderect(p["rect"]):
+                    vite -= 1
+                    # TODO: Aggiungi tempo_danno = ora
+                    reset_giocatore()
+                    proiettili_nemico.remove(p)
+            # --- Disegno ---
+            screen.fill(CELESTE)
+            pygame.draw.rect(screen, MARRONE, (0, SCREEN_HEIGHT - 50, SCREEN_WIDTH, 50))
+            # TODO: Sostituisci draw.rect VERDE con blit ladro_normale_img o ladro_salto_img (basato su vel_y < 0)
+            pygame.draw.rect(screen, VERDE, giocatore)
+            for obs in obstacles:
+                pygame.draw.rect(screen, ROSSO, (obs["x"], obs["y"], 50, 50))
+            for coin in coins:
+                # TODO: Sostituisci draw.circle con blit coin_frames[frame_index]
+                pygame.draw.circle(screen, GIALLO, (int(coin["x"]), int(coin["y"])), 10)
+            for nemico in nemici_sparanti:
+                # TODO: Sostituisci draw.rect ROSSO con blit police_img
+                pygame.draw.rect(screen, ROSSO, nemico["rect"])
+            for p in proiettili_nemico:
+                pygame.draw.rect(screen, ARANCIONE, p["rect"])
+            # HUD
+            # TODO: Sostituisci testo_vite con for i in range(vite): screen.blit(heart_img, (10 + i * 35, 10))
+            testo_vite = font.render(f"Vite: {vite}", True, NERO)
+            testo_punti = font.render(f"Punti: {punteggio}", True, NERO)
+            screen.blit(testo_vite, (10, 10))
+            screen.blit(testo_punti, (10, 50))
+        # Vittoria
+        if vittoria:
+            rett_vittoria = pygame.Rect(100, 150, 600, 300)
+            pygame.draw.rect(screen, BIANCO, rett_vittoria, border_radius=20)
+            testo_vittoria = font_grande.render("HAI VINTO!", True, NERO)
+            screen.blit(testo_vittoria, (SCREEN_WIDTH // 2 - 180, SCREEN_HEIGHT // 2 - 40))
+            if ora - tempo_menu_inizio > 2000:
+                stato = "menu"
+        # Sconfitta
+        if sconfitta:
+            rett_sconfitta = pygame.Rect(100, 150, 600, 300)
+            pygame.draw.rect(screen, BIANCO, rett_sconfitta, border_radius=20)
+            testo_sconfitta = font_grande.render("HAI PERSO!", True, NERO)
+            screen.blit(testo_sconfitta, (SCREEN_WIDTH // 2 - 180, SCREEN_HEIGHT // 2 - 40))
+            if ora - tempo_menu_inizio > 2000:
+                stato = "menu"
+    pygame.display.flip()

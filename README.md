@@ -129,7 +129,7 @@ Fisica e movimento: salto (SPAZIO), gravità, collisioni con suolo e oggetti.
 HUD vite/punti e logiche di base.
 **Focus:** input, fisica e collisioni.
 
-### Lezione 3 — Tricca
+### Lezione 3 — Tricca Tommaso
 
 Ostacoli dinamici: generazione casuale e monete.
 **Focus:** generazione procedurale e bilanciamento.
@@ -144,7 +144,7 @@ Nemici e proiettili: spawn limitato e gestione durata proiettili.
 Condizioni di vittoria (30 secondi) e sconfitta (vite a zero).
 **Focus:** fine partita e HUD.
 
-### Lezione 6 — Tricca
+### Lezione 6 — Tricca Tommaso
 
 Menu e stati di gioco: passaggio tra menu, gioco e schermate finali.
 **Focus:** gestione stati e UX di base.
@@ -162,7 +162,7 @@ Grafica, animazioni e polish finale: sprite, monete animate, invincibilità post
 | ------------------- | ------------------------------------------------ | ------- |
 | **Federico Betti**  | Coordinatore, autore sprite ladro, polish finale | 1, 7    |
 | **Leonardo Paneni** | Fisica, nemici, vittoria/sconfitta               | 2, 4, 5 |
-| **Tricca**          | Ostacoli e gestione stati/menu                   | 3, 6    |
+| **Tommaso Tricca**          | Ostacoli e gestione stati/menu                   | 3, 6    |
 
 
 

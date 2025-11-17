@@ -1,12 +1,13 @@
 import pygame
 import sys
 import random
+import os
 pygame.init()
 # --- Impostazioni schermo ---
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-pygame.display.set_caption("Ladro in fuga - Lezione 4 con vittoria e sconfitta")
+pygame.display.set_caption("Ladro in fuga - Lezione 7")
 # --- Clock e FPS ---
 clock = pygame.time.Clock()
 FPS = 60
@@ -16,7 +17,7 @@ SALTO_FORZA = -15
 TOLLERANZA = 10
 PUNTEGGIO_PER_BOSS = 50
 TEMPO_VITTORIA = 30000 # 30 secondi (in millisecondi)
-# TODO: Aggiungi TEMPO_INVINCIBILE = 1000
+TEMPO_INVINCIBILE = 1000
 # --- Colori ---
 CELESTE = (135, 206, 235)
 MARRONE = (139, 69, 19)
@@ -27,26 +28,32 @@ VIOLA = (128, 0, 128)
 NERO = (0, 0, 0)
 ARANCIONE = (255, 140, 0)
 BIANCO = (255, 255, 255)
+IMAGES_PATH = "images"
 # TODO: Aggiungi caricamento immagini (ladro3.png, ladro2.png, coin1-5.png, police1.png, heart.png)
 # --- Stato del gioco ---
 stato = "menu" # "menu" o "gioco"
 tempo_menu_inizio = 0
 # --- Giocatore ---
-# TODO: Definisci ALTEZZA_GIOCATORE = 64, LARGHEZZA_GIOCATORE = 48
+ALTEZZA_GIOCATORE = 64
+LARGHEZZA_GIOCATORE = 48
 # giocatore = pygame.Rect(100, SCREEN_HEIGHT - 50 - ALTEZZA_GIOCATORE, LARGHEZZA_GIOCATORE, ALTEZZA_GIOCATORE)
 giocatore = pygame.Rect(100, SCREEN_HEIGHT - 150, 40, 50)
 vel_y = 0
 puo_saltare = False
 vite = 3
 punteggio = 0
-# TODO: Aggiungi tempo_danno = 0
+tempo_danno = 0
 # --- Ostacoli e monete ---
-# TODO: Definisci LARGHEZZA_MONETA = 32, ALTEZZA_MONETA = 32
+LARGHEZZA_MONETA = 32
+ALTEZZA_MONETA = 32
 obstacles = [{"x": 800, "y": SCREEN_HEIGHT - 100}, {"x": 1200, "y": SCREEN_HEIGHT - 100}]
-coins = [{"x": 900, "y": SCREEN_HEIGHT - 200}, {"x": 1300, "y": SCREEN_HEIGHT - 180}]
-# TODO: Aggiungi "frame_index": 0 in ogni coin
+coins = [
+    {"x": 900, "y": SCREEN_HEIGHT - 200, "frame_index": 0},
+    {"x": 1300, "y": SCREEN_HEIGHT - 180, "frame_index": 0}
+]
 # --- Nemici sparanti ---
-# TODO: Definisci LARGHEZZA_NEMICO = 48, ALTEZZA_NEMICO = 48
+LARGHEZZA_NEMICO = 48
+ALTEZZA_NEMICO = 48
 nemici_sparanti = []
 proiettili_nemico = []
 tempo_ultimo_spawn_nemico = 0
@@ -63,9 +70,8 @@ font_grande = pygame.font.SysFont(None, 80)
 # --- Funzione reset giocatore ---
 def reset_giocatore():
     global vel_y, puo_saltare
-    # TODO: Usa ALTEZZA_GIOCATORE per y
     giocatore.x = 100
-    giocatore.y = SCREEN_HEIGHT - 150
+    giocatore.y = SCREEN_HEIGHT - 50 - ALTEZZA_GIOCATORE
     vel_y = 0
     puo_saltare = False
 # --- Funzione reset gioco ---
@@ -82,13 +88,13 @@ def reset_gioco():
     tempo_ultimo_spawn_nemico = 0
     tempo_ultimo_proiettile = 0
     reset_giocatore()
-    # TODO: Aggiungi tempo_danno = 0
+    tempo_danno = 0
+    
 # --- Funzione spawn nemico ---
 def spawn_nemico():
     x = SCREEN_WIDTH + 50
     y = SCREEN_HEIGHT - 100
-    # TODO: Usa LARGHEZZA_NEMICO, ALTEZZA_NEMICO per rect e y
-    nemico = {"rect": pygame.Rect(x, y, 40, 40), "spawn_time": pygame.time.get_ticks(), "proiettile_sparato": False}
+    nemico = {"rect": pygame.Rect(x, y, LARGHEZZA_NEMICO, ALTEZZA_NEMICO), "spawn_time": pygame.time.get_ticks(), "proiettile_sparato": False}
     nemici_sparanti.append(nemico)
 # --- Ciclo principale ---
 running = True
@@ -194,11 +200,10 @@ while running:
                         puo_saltare = True
                     else:
                         vite -= 1
-                        # TODO: Aggiungi tempo_danno = ora
+                        tempo_danno = ora
                         reset_giocatore()
             for coin in coins[:]:
-                # TODO: Usa LARGHEZZA_MONETA, ALTEZZA_MONETA per coin_rect
-                coin_rect = pygame.Rect(coin["x"], coin["y"], 20, 20)
+                coin_rect = pygame.Rect(coin["x"], coin["y"], LARGHEZZA_MONETA, ALTEZZA_MONETA)
                 if giocatore.colliderect(coin_rect):
                     coins.remove(coin)
                     punteggio += 10
@@ -216,14 +221,15 @@ while running:
                 if ora - nemico["spawn_time"] > 2500:
                     nemici_sparanti.remove(nemico)
             for p in proiettili_nemico[:]:
-                # TODO: Aggiungi check invincibilità
+                if ora - tempo_danno < TEMPO_INVINCIBILE:
+                    continue
                 p["rect"].x -= 7
                 if ora - p["spawn_time"] > 3000 or p["rect"].right < 0:
                     proiettili_nemico.remove(p)
                     continue
                 if giocatore.colliderect(p["rect"]):
                     vite -= 1
-                    # TODO: Aggiungi tempo_danno = ora
+                    tempo_danno = ora
                     reset_giocatore()
                     proiettili_nemico.remove(p)
             # --- Disegno ---
@@ -242,7 +248,7 @@ while running:
             for p in proiettili_nemico:
                 pygame.draw.rect(screen, ARANCIONE, p["rect"])
             # HUD
-            # TODO: Sostituisci testo_vite con for i in range(vite): screen.blit(heart_img, (10 + i * 35, 10))
+            # TODO: Sostituisci testo_vite con un for e disegna i cuori
             testo_vite = font.render(f"Vite: {vite}", True, NERO)
             testo_punti = font.render(f"Punti: {punteggio}", True, NERO)
             screen.blit(testo_vite, (10, 10))

@@ -35,23 +35,10 @@ ARANCIONE = (255, 140, 0)
 BIANCO = (255, 255, 255)
 
 # --- TODO 1: Carica le immagini del ladro (ladro3.png e ladro2.png) dalla cartella "images" e ridimensionale a 48x64
-IMAGES_PATH = "images"
-ladro_normale_img = pygame.image.load(os.path.join(IMAGES_PATH, "ladro3.png")).convert_alpha()
-ladro_salto_img = pygame.image.load(os.path.join(IMAGES_PATH, "ladro2.png")).convert_alpha()
-ladro_normale_img = pygame.transform.scale(ladro_normale_img, (48, 64))
-ladro_salto_img = pygame.transform.scale(ladro_salto_img, (48, 64))
 
 # --- TODO 2: Carica le 5 immagini delle monete (coin1.png - coin5.png) in una lista e ridimensionale a 32x32
-coin_frames = []
-for i in range(1, 6):
-    coin_img = pygame.image.load(os.path.join(IMAGES_PATH, f"coin{i}.png")).convert_alpha()
-    coin_frames.append(pygame.transform.scale(coin_img, (32, 32)))
 
 # --- TODO 3: Carica le immagini di police1.png (48x48) e heart.png (32x32)
-police_img = pygame.image.load(os.path.join(IMAGES_PATH, "police1.png")).convert_alpha()
-police_img = pygame.transform.scale(police_img, (48, 48))
-heart_img = pygame.image.load(os.path.join(IMAGES_PATH, "heart.png")).convert_alpha()
-heart_img = pygame.transform.scale(heart_img, (32, 32))
 
 # --- Stato del gioco ---
 stato = "menu"
@@ -292,30 +279,25 @@ while running:
             screen.fill(CELESTE)
             pygame.draw.rect(screen, MARRONE, (0, SCREEN_HEIGHT - 50, SCREEN_WIDTH, 50))
             
-            # --- TODO 4: Disegna ladro_salto_img se vel_y < 0 e non puo_saltare, altrimenti ladro_normale_img
-            if vel_y < 0 and not puo_saltare:
-                screen.blit(ladro_salto_img, (giocatore.x, giocatore.y))
-            else:
-                screen.blit(ladro_normale_img, (giocatore.x, giocatore.y))
+            # --- TODO 4: Fai lampeggiare il giocatore durante invincibilità con (ora // 100) % 2, poi disegna ladro_salto_img se sta saltando
+            pygame.draw.rect(screen, VERDE, giocatore)
             
             for obs in obstacles:
                 pygame.draw.rect(screen, ROSSO, (obs["x"], obs["y"], 50, 50))
             
             # --- TODO 5: Anima le monete calcolando il frame con (ora // 200) % len(coin_frames) e disegnalo
             for coin in coins:
-                frame_index = (ora // 200) % len(coin_frames)
-                coin["frame_index"] = frame_index
-                screen.blit(coin_frames[frame_index], (coin["x"], coin["y"]))
+                pygame.draw.circle(screen, GIALLO, (int(coin["x"]), int(coin["y"])), 10)
             
             # --- TODO 6: Disegna police_img per ogni nemico invece del rettangolo rosso
             for nemico in nemici_sparanti:
-                screen.blit(police_img, (nemico["rect"].x, nemico["rect"].y))
+                pygame.draw.rect(screen, ROSSO, nemico["rect"])
             for p in proiettili_nemico:
                 pygame.draw.rect(screen, ARANCIONE, p["rect"])
 
             # --- TODO 7: Disegna heart_img per ogni vita con un ciclo for, posizione (10 + i * 35, 10)
-            for i in range(vite):
-                screen.blit(heart_img, (10 + i * 35, 10))
+            testo_vite = font.render(f"Vite: {vite}", True, NERO)
+            screen.blit(testo_vite, (10, 10))
             
             testo_punti = font.render(f"Punti: {punteggio}", True, NERO)
             screen.blit(testo_punti, (10, 50))

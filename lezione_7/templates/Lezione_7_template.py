@@ -278,24 +278,35 @@ while running:
             # --- Disegno ---
             screen.fill(CELESTE)
             pygame.draw.rect(screen, MARRONE, (0, SCREEN_HEIGHT - 50, SCREEN_WIDTH, 50))
-            
-            # --- TODO 4: Fai lampeggiare il giocatore durante invincibilità con (ora // 100) % 2, poi disegna ladro_salto_img se sta saltando
-            pygame.draw.rect(screen, VERDE, giocatore)
+            if ora - tempo_danno < TEMPO_INVINCIBILE:
+                if (ora // 100) % 2 == 0:
+                    if vel_y < 0 and not puo_saltare:
+                        screen.blit(ladro_salto_img, (giocatore.x, giocatore.y))
+                    else:
+                        screen.blit(ladro_normale_img, (giocatore.x, giocatore.y))
+            else:
+                if vel_y < 0 and not puo_saltare:
+                    screen.blit(ladro_salto_img, (giocatore.x, giocatore.y))
+                else:
+                    screen.blit(ladro_normale_img, (giocatore.x, giocatore.y))
             
             for obs in obstacles:
                 pygame.draw.rect(screen, ROSSO, (obs["x"], obs["y"], 50, 50))
             
-            # --- TODO 5: Anima le monete calcolando il frame con (ora // 200) % len(coin_frames) e disegnalo
+            for obs in obstacles:
+                pygame.draw.rect(screen, ROSSO, (obs["x"], obs["y"], 50, 50))
+            
+            # --- TODO 4: Anima le monete calcolando il frame con (ora // 200) % len(coin_frames) e disegnalo
             for coin in coins:
                 pygame.draw.circle(screen, GIALLO, (int(coin["x"]), int(coin["y"])), 10)
             
-            # --- TODO 6: Disegna police_img per ogni nemico invece del rettangolo rosso
+            # --- TODO 5: Disegna police_img per ogni nemico invece del rettangolo rosso
             for nemico in nemici_sparanti:
                 pygame.draw.rect(screen, ROSSO, nemico["rect"])
             for p in proiettili_nemico:
                 pygame.draw.rect(screen, ARANCIONE, p["rect"])
 
-            # --- TODO 7: Disegna heart_img per ogni vita con un ciclo for, posizione (10 + i * 35, 10)
+            # --- TODO 6: Disegna heart_img per ogni vita con un ciclo for, posizione (10 + i * 35, 10)
             testo_vite = font.render(f"Vite: {vite}", True, NERO)
             screen.blit(testo_vite, (10, 10))
             

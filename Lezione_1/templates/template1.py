@@ -21,8 +21,7 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-
-    # TODO: aggiungere input tastiera e logica futura
+   
 
     #TODO:  Disegna sfondo
     
